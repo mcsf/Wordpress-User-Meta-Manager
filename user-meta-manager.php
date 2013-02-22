@@ -892,6 +892,10 @@ function umm_show_profile_fields($user, $echo=true, $fields=false, $debug=false)
     endif;
 
     foreach($profile_fields as $profile_field_name => $profile_field_settings):
+
+    $is_admin_field = in_array( 'admin', explode( ' ', $profile_field_settings['class'] ) );
+    if ( !current_user_can( 'edit_users' ) && $is_admin_field ) continue;
+
     if((!$show_fields && $profile_field_settings['add_to_profile'] == 'yes') || ($show_fields && array_key_exists($profile_field_name, $umm_data))):
       $default_value = stripslashes(htmlspecialchars_decode($profile_field_settings['value']));
       $user_value = stripslashes(htmlspecialchars_decode(get_user_meta($current_user->ID, $profile_field_name, true)));
