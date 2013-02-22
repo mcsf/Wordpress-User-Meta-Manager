@@ -874,8 +874,8 @@ function umm_restore_confirm(){
     exit;
 }
 
-function umm_show_profile_fields($echo=true, $fields=false, $debug=false){
-   global $current_user;
+function umm_show_profile_fields($user, $echo=true, $fields=false, $debug=false){
+    $current_user = $user;
     $umm_data = get_option('user_meta_manager_data');
     $profile_fields = get_option('umm_profile_fields');
     $show_fields = ($fields) ?  explode(",", str_replace(", ", ",", $fields)) : false;
@@ -1109,8 +1109,10 @@ function umm_update_columns(){
     exit; 
 }
 
-function umm_update_profile_fields(){
-    global $current_user;
+function umm_update_profile_fields( $user_id ){
+    if ( !current_user_can( 'edit_users' ) ) return;
+    $current_user = get_user_to_edit( $user_id );
+
     $saved_profile_fields = (!get_option('umm_profile_fields')) ? array() : get_option('umm_profile_fields');
     foreach($saved_profile_fields as $field_name => $field_settings):
       $posted_value = (isset($_REQUEST[$field_name])) ? trim($_REQUEST[$field_name]) : '';
@@ -1463,7 +1465,7 @@ add_action('user_register', 'umm_default_keys');
 //TODO:Add fields to the top or to the bottom of the profile editor
 //add_action('profile_personal_options', 'umm_show_profile_fields');
 add_action('edit_user_profile', 'umm_show_profile_fields');
-add_action('profile_update', 'umm_update_profile_fields');
+add_action('profile_update', 'umm_update_profile_fields', 10, 2);
 add_action('show_user_profile', 'umm_show_profile_fields');
 
 // All ajax admin-ajax calls pipe through umm_switch_action()
