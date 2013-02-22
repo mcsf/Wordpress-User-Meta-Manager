@@ -875,7 +875,6 @@ function umm_restore_confirm(){
 }
 
 function umm_show_profile_fields($user, $echo=true, $fields=false, $debug=false){
-    $current_user = $user;
     $umm_data = get_option('user_meta_manager_data');
     $profile_fields = get_option('umm_profile_fields');
     $show_fields = ($fields) ?  explode(",", str_replace(", ", ",", $fields)) : false;
@@ -898,7 +897,7 @@ function umm_show_profile_fields($user, $echo=true, $fields=false, $debug=false)
 
     if((!$show_fields && $profile_field_settings['add_to_profile'] == 'yes') || ($show_fields && array_key_exists($profile_field_name, $umm_data))):
       $default_value = stripslashes(htmlspecialchars_decode($profile_field_settings['value']));
-      $user_value = stripslashes(htmlspecialchars_decode(get_user_meta($current_user->ID, $profile_field_name, true)));
+      $user_value = stripslashes(htmlspecialchars_decode(get_user_meta($user->ID, $profile_field_name, true)));
       
       $value = (empty($user_value)) ? $default_value : $user_value;
       
@@ -1114,14 +1113,17 @@ function umm_update_columns(){
 }
 
 function umm_update_profile_fields( $user_id ){
-    if ( !current_user_can( 'edit_users' ) ) return;
-    $current_user = get_user_to_edit( $user_id );
+    $user = get_user_to_edit( $user_id );
 
     $saved_profile_fields = (!get_option('umm_profile_fields')) ? array() : get_option('umm_profile_fields');
     foreach($saved_profile_fields as $field_name => $field_settings):
+      # admin-only fields can only be updated by admins
+      $is_admin_field = in_array( 'admin', explode( ' ', $field_settings['class'] ) );
+      if ( !current_user_can( 'edit_users' ) && $is_admin_field ) continue;
+
       $posted_value = (isset($_REQUEST[$field_name])) ? trim($_REQUEST[$field_name]) : '';
       $field_value = ($posted_value == '') ? $field_settings['value'] : addslashes(htmlspecialchars($posted_value));
-      update_user_meta($current_user->ID, $field_name, $field_value);
+      update_user_meta($user->ID, $field_name, $field_value);
     endforeach;
 }
 
