@@ -1221,7 +1221,7 @@ function umm_update_user_meta(){
         
         if(!empty($meta_key)):
         
-        if($all_users):
+        if(1 || $all_users): // why restrict to $all_users?!
          $umm_data[$meta_key] = $meta_value;        
          if((!array_key_exists($meta_key, $saved_profile_fields) || array_key_exists($meta_key, $saved_profile_fields)) && !empty($_POST['umm_profile_field_type'])):
            // add or update field
